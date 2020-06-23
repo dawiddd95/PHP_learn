@@ -6,21 +6,37 @@ namespace App;
 
 // Import widoku 
 require_once("src/View.php");
+// Import klasy Database
+require_once("src/Database.php");
 
 class Controller
 {
    // Ustawiamy jaka akcja ma być domyślna, domyślnie ma pokazywać listę notatek
    private const DEFAULT_ACTION = 'list';
 
+   // Zapisujemy konfigurację bazy danych do zmiennej statycznej, teraz każdy obiekt kontrolera widzi i ma dostęp do konfiguracji
+   private static array $configuration = [];
+
    // Pole klasy gdzie przechowuje wszystkie typy requestu np: POST czy GET czy inny
    private array $request;
    // Pole klasy gdzie do pola $view może przypisać tylko obiekt klasy View inaczej zwóci błąd
    private View $view;
 
+   // Metoda statyczna do przekazania konfiguracji bazy danych do Kontrolera
+   public static function initConfiguration(array $configuration): void 
+   {
+      // Odwołujemy się do statycznej $configuration w naszej klasie i przypisujemy do niej wartość przekazaną do wywołania initConfiguration()
+      self::$configuration = $configuration;
+   }
+
    // Konstruktor klasy, który przyjmuje tablicę wszystkich możliwych żądań HTTP
    // Kontroler powinien mieć pola request i widok, żeby wiedzieć jakie żądanie ma przetwarzać i jaki widok pokazać w rezultacie
    public function __construct(array $request)
    {
+      // Tworzymy obiekt klasy Database();
+      // Przekazujemy do tego obiektu konfigurację static czyli self:: oraz to co jest pod kluczem 'db' w tej tablicy $configuration
+      $db = new Database(self::$configuration['db']);
+
       // Do pola request tej klasy przypisuje tablicę wszystkich możliwych żądań HTTP
       $this->request = $request;
       // Nie dostaliśmy tego z argumentu obiektu tylko jako .. alternatywa w Java to było suche this.pole = wartość i wtedy jest ona stała dla każdego tworzonego obiektu i nie jest sparametryzowana przez parametr konstruktora
