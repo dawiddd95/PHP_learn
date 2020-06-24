@@ -16,6 +16,8 @@ use Throwable;
 
 class Database
 {
+   // Nasze połączenie, zapisujemy je do pola klasy, żebyśmy mogli go używać
+   // To pole ma przypisany do siebie obiekt klasy PDO
    private PDO $conn;
 
    // Potrzebujemy go, aby przekazać dane konfiguracyjne wykorzystywane do połączenia z db z pliku config.php
@@ -35,18 +37,23 @@ class Database
       }
    }
 
+   // w $data dostajemy dane z formularzu do dodawania notatki
    public function createNote(array $data): void
    {
       try {
+         // quote() to metoda pozwalająca na eskejpowanie żeby uniknąć SQL Injection
          $title = $this->conn->quote($data['title']);
          $description = $this->conn->quote($data['description']);
+         // date() zwraca aktualną datę i czas według formatu podanego w argumencie
          $created = $this->conn->quote(date('Y-m-d H:i:s'));
 
+         // Zapytanie SQL przypisaliśmy sobie do zmiennej
          $query = "
          INSERT INTO notes(title, description, created)
          VALUES($title, $description, $created)
          ";
 
+         // exec() służą do wykonania polecenia SQL
          $this->conn->exec($query);
       } catch (Throwable $e) {
          throw new StorageException('Nie udało się utworzyć nowej notatki', 400, $e);
@@ -65,6 +72,7 @@ class Database
          $dsn,
          $config['user'],
          $config['password'],
+         // ustawiamy żeby PDO domyślnie rzucało wyjątki
          [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
          ]

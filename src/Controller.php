@@ -22,6 +22,9 @@ class Controller
    // Zapisujemy konfigurację bazy danych do zmiennej statycznej, teraz każdy obiekt kontrolera widzi i ma dostęp do konfiguracji
    private static array $configuration = [];
 
+   // Tworzymy to pole żebyśmy mogli używać obiektu database wszędzie w tej klasie, a nie tylko w zakresie funkcji w której byśmy stworzyli obiekt Database do zmiennej przez $db = new Database(self::$configuration['db']);
+   // Dzięki temu polu mamy dostęp z tej klasy Controller do publicznych metod i właściwości klasy Database
+   private Database $database;
    // Pole klasy gdzie przechowuje wszystkie typy requestu np: POST czy GET czy inny
    private array $request;
    // Pole klasy gdzie do pola $view może przypisać tylko obiekt klasy View inaczej zwóci błąd
@@ -45,7 +48,7 @@ class Controller
       }
       // Tworzymy obiekt klasy Database();
       // Przekazujemy do tego obiektu konfigurację static czyli self:: oraz to co jest pod kluczem 'db' w tej tablicy $configuration
-      $db = new Database(self::$configuration['db']);
+      $this->database = new Database(self::$configuration['db']);
 
       // Do pola request tej klasy przypisuje tablicę wszystkich możliwych żądań HTTP
       $this->request = $request;
@@ -67,7 +70,7 @@ class Controller
             // to wyświetl page o nazwie create
             $page = 'create';
             // Nastaw flagę, że chodzi o create na false
-            $created = false;
+            // $created = false;
 
             // Przypisz do zmiennej wynik metody getRequestPost(); czy pod kluczem 'post' mamy jakieś dane czyli czy jakieś wysłaliśmy na serwer lub wysyłamy
             $data = $this->getRequestPost();
@@ -76,17 +79,29 @@ class Controller
             // Jeśli klucz 'post' nie jest pusty to mamy żądanie POST na URL ?action= . Wtedy:
             if (!empty($data)) {
                // Ustaw flagę created na true
-               $created = true;
-               // Przypisz do zmiennej viewParams interesujące nas wprowadzane dane
-               // Jeśli przypiszemy tylko z góry określone przez nas pola to zabezpieczamy się, że nagle jest wysłana dana o dziwnym kluczu i wartości o które nam nie chodzi
-               $viewParams = [
+               // $created = true; skoro mamy już przekierowanie do flaga $created już jest nie potrzebna
+
+               // Wywołanie metody createNote z klasy Database z przekazanymi danymi
+               // Nie przekażemy tutaj $data bo $data to wszystkie dane z posta, a my może nie chcemy wszystkich danych tylko te potrzebne do utworzenia notatki
+               $this->database->createNote([
                   'title' => $data['title'],
                   'description' => $data['description']
-               ];
+               ]);
+
+               // header wysyła nam dane do naszej przeglądarki
+               // Tutaj konkretnie przekierowanie na /?before=created
+               header('Location: /?before=created');
+
+               // Przypisz do zmiennej viewParams interesujące nas wprowadzane dane
+               // Jeśli przypiszemy tylko z góry określone przez nas pola to zabezpieczamy się, że nagle jest wysłana dana o dziwnym kluczu i wartości o które nam nie chodzi
+               // $viewParams = [
+               //    'title' => $data['title'],
+               //    'description' => $data['description']
+               // ];
             }
 
             // Pod klucz 'created' w tablicy viewParams przypisz końcową ustawioną flagę created. Dzięki temu będziemy wiedzieć czy w widoku pokazać nowo dodanej notatki zamiast formularzu. Bo w widoku mamy taki if, że jeśli created jest true to ma nam pokazać to i ukryć formularz.
-            $viewParams['created'] = $created;
+            // $viewParams['created'] = $created;
          break;
 
          // i ?action= ma wartość show
@@ -102,8 +117,15 @@ class Controller
             // Pokaż nam widok list.php bo jak przekazujemy $page do render() w klasie View to tam jest require_once("templates/layout.php"); i kiedy już nam przechodzi do tego importowanego pliku layoutu i tam mamy poniższy fragment
             // <?php require_once("templates/pages/$page.php"); znak_Zapytania> , który renderuje nam w tym miejscu widok w zależności od wartości zmiennej $page
             $page = 'list';
+
+            // Chcemy się odnieść do danych z URL z GET
+            $data = $this->getRequestGet();
+
+            // Do klucza before z viewParams przypisujemy wartość z klucza before jeśli jest, w przeciwnym wypadku przypisz null 
+            $viewParams['before'] = $data['before'] ?? null;
+
             // Przekaż też tablicę viewParams z kluczem resultList i wtedy wartość z pod klucza 'resultList' możemy sobie w idoku wyświetlić
-            $viewParams['resultList'] = "wyświetlamy notatki";
+            // $viewParams['resultList'] = "wyświetlamy notatki";
          break;
       }
 
