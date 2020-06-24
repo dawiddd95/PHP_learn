@@ -24,9 +24,13 @@ class Database
    {
       // Try catch do połączenia z bazą danych czy połączyło
       try {
+         // Przy tworzeniu obiektu wywołuje nam odrazu te dwie metody klasy Database
+         // Najpierw waliduje format konfiguracji
          $this->validateConfig($config);
+         // Potem tworzy połączenie
          $this->createConnection($config);
       } catch (PDOException $e) {
+         // Jeśli coś nie tak to wywołaj nasz wyjątek z klasy StorageException czyli wyjątek dla baz danych
          throw new StorageException('Connection error');
       }
    }
@@ -55,6 +59,8 @@ class Database
       $dsn = "mysql:dbname={$config['database']};host={$config['host']}";
       
       // Tworzymy nowy obiekt PDO do naszych zapytań do bazy danych
+      // Obiekt klasy PDO służy do wyłowywania na nim zapytań SQL
+      // W tym przypadku obiekt PDO jest przypisane do $this->conn więc na nim będą wywoływane zapytania
       $this->conn = new PDO(
          $dsn,
          $config['user'],
@@ -65,6 +71,7 @@ class Database
       );
    }
 
+   // Sprawdza czy format konfiguracji jest poprawny, czy ma wartości we wszystkich potrzebnych kluczach
    private function validateConfig(array $config): void
    {
       if (

@@ -32,6 +32,10 @@
       // (new Controller($request)) czyli stwórz obiekt klasy Controller bez przypisywania jej nigdzie
       //  ->run(); czyli odrazu po stworzeniu tego obiektu wywołaj na nim metodę run();
       (new Controller($request))->run();
+   } catch(ConfigurationException $e) {
+      // mail('dawlyc1995@gmail.com', 'Error', $e->getMessage());
+      echo '<h1>Wystąpił błąd w aplikacji</h1>';
+      echo '<h3>Problem z konfiguracją</h3>';
    } catch(AppException $e) {
       echo '<h1>Wystąpił błąd w aplikacji</h1>';
       // W wyjątkach z AppException możemy nadać message bo mamy nad tym kontrole i nad messegem który będziemy przekazywać
@@ -50,6 +54,7 @@
    // src/Exception <- Wyjątki naszej aplikacji 
    // ---> AppException.php <- Ogólne wyjątki dla aplikacji
    // ---> StorageException.php <- Wyjątki dotyczące bazy danych
+   // ---> ConfigurationException.php <- Wyjątki dotyczące konfiguracji
    // templates <- wszystko co jest związane z HTML i szablonami widoków
    // templates/pages <- strony jak lista notatek, dodaj nową notatkę, edytuj, pokaż szczegóły
    // public <= style css

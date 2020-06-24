@@ -8,6 +8,11 @@ namespace App;
 require_once("src/View.php");
 // Import klasy Database
 require_once("src/Database.php");
+// Importujemy klasę wyjątku
+require_once("src/Exception/ConfigurationException.php");
+
+// Używamy klasy wyjątku
+use App\Exception\ConfigurationException;
 
 class Controller
 {
@@ -33,6 +38,11 @@ class Controller
    // Kontroler powinien mieć pola request i widok, żeby wiedzieć jakie żądanie ma przetwarzać i jaki widok pokazać w rezultacie
    public function __construct(array $request)
    {
+      // Jeśli nasza konfiguracja jest pusta to rzuć wyjątek
+      // Tutaj sprawdzamy czy konfiguracja db w ogóle istnieje, w klasie Database musimy jeszcze sprawdzić czy ma odpowiedni format
+      if(empty(self::$configuration)) {
+         throw new ConfigurationException('Configuration Error');
+      }
       // Tworzymy obiekt klasy Database();
       // Przekazujemy do tego obiektu konfigurację static czyli self:: oraz to co jest pod kluczem 'db' w tej tablicy $configuration
       $db = new Database(self::$configuration['db']);
