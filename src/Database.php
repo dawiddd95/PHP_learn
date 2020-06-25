@@ -6,10 +6,12 @@ namespace App;
 
 // Import
 require_once("Exception/StorageException.php");
+require_once("Exception/NotFoundException.php");
 
 // Używanie klas
 use App\Exception\ConfigurationException;
 use App\Exception\StorageException;
+use App\Exception\NotFoundException;
 use PDO;
 use PDOException;
 use Throwable;
@@ -37,6 +39,43 @@ class Database
       }
    }
 
+   // Przekazujemy id notatki jaką ma zwrócić
+   // Metoda zwraca array bo jedna notatka też jest w tablicy
+   public function getNote(int $id): array
+   {
+      // Oczywiście cały kod, który może wywalić wyjątek umieszczamy w try catch
+      try {
+         // Tutaj nie quote'ujemy tego id ponieważ już w parametrze funkcji wymagamy by był intem więc nikt w miejsce id nie wywoła skryptu
+         $query = "SELECT * FROM notes WHERE id = $id";
+         $result = $this->conn->query($query);
+         $note = $result->fetch(PDO::FETCH_ASSOC);
+      } catch (Throwable $e) {
+         throw new StorageException('Nie udało się pobrać notatki', 400, $e);
+      }
+
+      if (!$note) {
+         throw new NotFoundException("Notatka o id: $id nie istnieje");
+      }
+
+      return $note;
+   }
+
+   public function getNotes(): array
+   {
+      try {
+         // Mikro optymalizacja zamiast pobierać wszystko kiedy w liście np: nie chcemy pokazywać description to nie pobierajmy tej kolumny z DB
+         $query = "SELECT id, title, created FROM notes";
+
+         // metoda query() z obiektu klasy PDO służy do pobierania danych, a metoda exec() do całej reszty
+         $result = $this->conn->query($query);
+
+         // PDO::FETCH_ASSOC oznacza format zwróconych danych przez $query i oznacza tablicę asocjacyjną
+         return $result->fetchAll(PDO::FETCH_ASSOC);
+      } catch(Throwable $e) {
+         throw new StorageException('Nie udało się pobrać danych o notatkach', 400, $e);
+      }
+   }
+
    // w $data dostajemy dane z formularzu do dodawania notatki
    public function createNote(array $data): void
    {
@@ -49,8 +88,8 @@ class Database
 
          // Zapytanie SQL przypisaliśmy sobie do zmiennej
          $query = "
-         INSERT INTO notes(title, description, created)
-         VALUES($title, $description, $created)
+            INSERT INTO notes(title, description, created)
+            VALUES($title, $description, $created)
          ";
 
          // exec() służą do wykonania polecenia SQL

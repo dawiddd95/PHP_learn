@@ -7,6 +7,7 @@
    // Importy
    require_once("src/Utils/debug.php");
    require_once("src/Controller.php");
+   require_once("src/Exception/AppException.php");
 
    // Używanie mojej klasy AppException
    use App\Exception\AppException;
