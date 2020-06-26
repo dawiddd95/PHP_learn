@@ -6,7 +6,8 @@
 
    // Importy
    require_once("src/Utils/debug.php");
-   require_once("src/Controller.php");
+   require_once("src/NoteController.php");
+   require_once("src/Request.php");
    require_once("src/Exception/AppException.php");
 
    // Używanie mojej klasy AppException
@@ -16,23 +17,20 @@
 
    $configuration = require_once("config/config.php");
 
-   // Ta tablica w ostateczności powinna mieć też metody DELETE oraz PATCH
-   $request = [
-   'get' => $_GET,
-   'post' => $_POST
-   ];
+   // obiekt klasy Request do obsługi zapytań HTTP
+   $request = new Request($_GET, $_POST);
 
    try {
       // $configuration możemy wstrzyknąć do Controller na 2 sposoby => albo dopisując go do wywołania obiektu new Controller($request, $configuration), albo tworząc metodę statyczną i wywołując ją w tym miejscu
-      // Wywołujemy metodę statyczną z klasy Controller i przekazujemy jej konfigurację bazy danych z pliku config.php
-      Controller::initConfiguration($configuration);
+      // Wywołujemy metodę statyczną z klasy AbstractController i przekazujemy jej konfigurację bazy danych z pliku config.php
+      AbstractController::initConfiguration($configuration);
 
       // Uruchamia sam metodę run z klasy Controller
       // $request to tablica z kluczem 'get' oraz 'post'
       // Przekazujemy ten obiekt, żeby nasz kontroler mógł reagować na żądania typu GET oraz POST
       // (new Controller($request)) czyli stwórz obiekt klasy Controller bez przypisywania jej nigdzie
       //  ->run(); czyli odrazu po stworzeniu tego obiektu wywołaj na nim metodę run();
-      (new Controller($request))->run();
+      (new NoteController($request))->run();
    } catch(ConfigurationException $e) {
       // mail('dawlyc1995@gmail.com', 'Error', $e->getMessage());
       echo '<h1>Wystąpił błąd w aplikacji</h1>';
@@ -53,6 +51,7 @@
    // src/utils <- Tutaj znajduje się nasza funkcja debugująca
    // src/Database.php <- klasa na której wykonujemy operacje na db - połączenie z db, zapytania do db
    // src/Exception <- Wyjątki naszej aplikacji 
+   // src/Request.php <- Wszystkie dane o requeście, które ma obsługiwać Kontroler
    // ---> AppException.php <- Ogólne wyjątki dla aplikacji
    // ---> StorageException.php <- Wyjątki dotyczące bazy danych
    // ---> ConfigurationException.php <- Wyjątki dotyczące konfiguracji

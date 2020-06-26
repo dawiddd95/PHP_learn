@@ -47,14 +47,14 @@
           <?php foreach ($params['notes'] ?? [] as $note) : ?>
             <tr>
               <!-- Rzutowanie na int, takie zabezpieczenie, żeby w miejsce id nie podali nak hakerzy skryptu -->
-              <td><?php echo (int) $note['id'] ?></td>
+              <td><?php echo $note['id'] ?></td>
               <!-- htmlentities, żeby haker nie mógł wywołać swojego skryptu poprzez wpisanie go w tagach <script> w jakiś input aplikacji -->
-              <td><?php echo htmlentities($note['title']) ?></td>
+              <td><?php echo $note['title'] ?></td>
               <!-- htmlentities, żeby haker nie mógł wywołać swojego skryptu poprzez wpisanie go w tagach <script> w jakiś input aplikacji -->
-              <td><?php echo htmlentities($note['created']) ?></td>
+              <td><?php echo $note['created'] ?></td>
               <td>
                 <!-- Przekazujemy zmienną id notatki do stringa jako interpolacja -->
-                <a href="/?action=show&id=<?php echo (int) $note['id'] ?>">
+                <a href="/?action=show&id=<?php echo $note['id'] ?>">
                   <button>Szczegóły</button>
                 </a>
               </td>
