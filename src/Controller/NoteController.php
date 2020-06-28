@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
-
-require_once("src/AbstractController.php");
+namespace App\Controller;
 
 // Używamy klasy wyjątku
 use App\Exception\NotFoundException;
@@ -94,5 +92,45 @@ class NoteController extends AbstractController
             'error' => $this->request->getParam('error')
          ]
       );
+   }
+
+   public function editAction()
+   {
+
+      if ($this->request->isPost()) {
+         $noteId = (int) $this->request->postParam('id');
+         $noteData = [
+            'title' => $this->request->postParam('title'),
+            'description' => $this->request->postParam('description')
+         ];
+         $this->database->editNote($noteId, $noteData);
+         $this->redirect('/', ['before' => 'edited']);
+      }
+
+      // Pobieramy notatkę, którą chcemy edytować po jej id
+      $noteId = (int) $this->request->getParam('id');
+      // Jeśli nie znalazło id
+      if (!$noteId) {
+         // Wykonaj metodę prywatną redirect
+         $this->redirect('/', ['error' => 'missingNoteId']);
+      }
+
+      try {
+         $note = $this->database->getNote($noteId);
+      } catch (NotFoundException $e) {
+         $this->redirect('/', ['error' => 'noteNotFound']);
+      }
+
+      $this->view->render('edit', ['note' => $note]);
+   }
+
+   private function redirect(string $to, array $params): void 
+   {
+      // implode() bierze każdy parametr z tablicy i go skleja używając stringa podanego jako 1 argument
+      // W tym przypadku &
+      // $params = implode('&', $params);
+      
+      $location = $to;
+      header("Location: $to/?error=missingNoteId");
    }
 }

@@ -9,6 +9,9 @@
          </li>
          <li>Zapisano: <?php echo $note['created'] ?></li>
       </ul>
+      <a href="/?action=edit&id=<?php echo $note['id'] ?>">
+         <button>Edytuj</button>
+      </a>
    <?php else : ?>
       <div>Brak notatki do wyświetlenia</div>
    <?php endif; ?>

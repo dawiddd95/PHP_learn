@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace App;
 
-// Import
-require_once("Exception/StorageException.php");
-require_once("Exception/NotFoundException.php");
-
 // Używanie klas
 use App\Exception\ConfigurationException;
 use App\Exception\StorageException;

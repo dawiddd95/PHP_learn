@@ -1,21 +1,38 @@
 <?php
 
    declare(strict_types=1);
+   
+   // automatyczne ładowanie klas (autoloader)
+   // Nie będziemy musieli już się martwić, że zmiana ścieżki rozwali nam aplikację
+   spl_autoload_register(function(string $classNamespace) {
+      // Jeśli znajdzie wrazę \ (podane \\ żeby eskejpować \ bo \ to znak specjalny i normalnie nie był by odczytany jako string) z $name to zamieni ją na /
+      // $name = str_replace('\\', '/', $name);
+      // Zamień \ na /, a App/ na '' w $name
+      $path = str_replace(['\\', 'App/'], ['/', ''], $classNamespace);
+      // Ścieżka z której ma odrazu wczytywać
+      $path = "src/$path.php";
 
-   namespace App;
+      // Wczytywanie już pliku
+      // __DIR__ <- katalog w którym znajduje się skrypt
+      require_once($path);
+   });
 
-   // Importy
+   // Import
    require_once("src/Utils/debug.php");
-   require_once("src/NoteController.php");
-   require_once("src/Request.php");
-   require_once("src/Exception/AppException.php");
+   $configuration = require_once("config/config.php");
 
+   // use to jakby importowanie klasy z innej przestrzeni nazw do naszej przestrzeni
+   // Jeśli nie używamy use i mamy jakąś klasę to PHP będzie jej szukać w przestrzeni nazw namespace dla pliku w którym jest ta klasa
+   // Podając use możemy sprawić, że ta klasa będzie szukana w innym namespace
+   use App\Request;
+   use App\Controller\AbstractController;
+   use App\Controller\NoteController;
    // Używanie mojej klasy AppException
    use App\Exception\AppException;
-   // Używanie klasy
-   use Throwable;
+   use App\Exception\ConfigurationException;
 
-   $configuration = require_once("config/config.php");
+
+
 
    // obiekt klasy Request do obsługi zapytań HTTP
    $request = new Request($_GET, $_POST);
@@ -40,6 +57,7 @@
       // W wyjątkach z AppException możemy nadać message bo mamy nad tym kontrole i nad messegem który będziemy przekazywać
       // W Wyjątkach Throwable nie możemy nadać message bo nie mamy nad tym kontroli i może pokazać wrażliwe dane np: nazwę bazy danych lub tabel, a tego nie chcemy
       echo '<h3>' . $e->getMessage() . '</h3>';
+      // Throwable pochodzi z globalnego namespacea 
    } catch(Throwable $e) {
       echo '<h1>Wystąpił błąd w aplikacji</h1>';
       dump($e);

@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App;
+// App to jakby root, a że katalog Controller to \Controller
+namespace App\Controller;
 
-// Importujemy klasę wyjątku
-require_once("Exception/ConfigurationException.php");
-// Import widoku 
-require_once("src/View.php");
-// Import klasy Database
-require_once("src/Database.php");
-
+use App\Database;
+// inaczej ./Request
+use App\Request;
+use App\View;
 use App\Exception\ConfigurationException;
 
 // Tutaj mamy wszystko współdzielone przez wszystkie kontrolery
