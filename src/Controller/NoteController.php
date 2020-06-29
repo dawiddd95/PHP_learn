@@ -31,7 +31,10 @@ class NoteController extends AbstractController
 
          // header wysyła nam dane do naszej przeglądarki
          // Tutaj konkretnie przekierowanie na /?before=created
-         header('Location: /?before=created');
+         // header('Location: /?before=created');
+
+         // Wywołuje metodę przekierowania
+         $this->redirect('/', ['before' => 'created']);
       }
       // Wywołujemy metodę render na tej klasie, która renderuje nam stronę i opcjonalne parametry jeśli są
       $this->view->render(
@@ -48,16 +51,16 @@ class NoteController extends AbstractController
       $noteId = (int) $this->request->getParam('id');
 
       if (!$noteId) {
-         header('Location: /?error=missingNoteId');
-         exit;
+         // Wywołaj metodę przekierowującą
+         $this->redirect('/', ['error' => 'missingNoteId']);
       }
 
       try {
          // Wywołujemy metodę getNote() na bazie danych
          $note = $this->database->getNote($noteId);
       } catch(NotFoundException $e) {
-         header('Location: /?error=noteNotFound');
-         exit;
+         // Wywołuje metodę przekierowującą
+         $this->redirect('/', ['error' => 'noteNotFound']);
       }
 
       // W viewParams, które przekazujemy do widoku tworzymy sobie klucz 'note' pod którym będą szczegóły notatki
@@ -124,13 +127,5 @@ class NoteController extends AbstractController
       $this->view->render('edit', ['note' => $note]);
    }
 
-   private function redirect(string $to, array $params): void 
-   {
-      // implode() bierze każdy parametr z tablicy i go skleja używając stringa podanego jako 1 argument
-      // W tym przypadku &
-      // $params = implode('&', $params);
-      
-      $location = $to;
-      header("Location: $to/?error=missingNoteId");
-   }
+   
 }

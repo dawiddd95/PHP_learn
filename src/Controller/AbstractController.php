@@ -98,6 +98,38 @@ abstract class AbstractController
       // }
    }
 
+
+   // Metoda realizująca wszystkie przekierowania na error na sukces etc..
+   protected function redirect(string $to, array $params): void 
+   {
+      $location = $to;
+
+      // Sprawdźmy czy w ogóle jakieś parametry zostały przesłane do tej metody
+      // Jeśli tak to:
+      if (count($params)) {
+         // inicjalizacja tablicy parametrów
+         $queryParams = [];
+         // Zwróćmy sobie wszystkie parametry z URL
+         foreach ($params as $key => $value) {
+            // urlencode buduje nam poprawny adres URL -> zamienia spacje na znaki oraz niepoprawnie wstawione & jako znaki
+            // Teraz queryParams będzie zawierać tablicę z poprawnymi URLami np: [1] => before=created
+            $queryParams[] = urlencode(key) . '=' . urlencode($value);
+         }
+
+         // implode() bierze każdy parametr z tablicy i go skleja używając stringa podanego jako 1 argument
+         // W tym przypadku &
+         // Teraz $queryParams to string złączonych wszystkich elementów tablicy
+         $queryParams = implode('&', $queryParams);
+
+         // Do lokacji przypiszemy URL + ?wszystkie parametry z tablicy z ich wartościami
+         $location .= '?' . $queryParams;
+      }
+
+      // Przekieruj do tej zbudowanej lokacji
+      header("Location: $location");
+   }
+
+
    // Metoda służąca do rozpoznania akcji (typu żądania HTTP)
    private function action(): string
    {
