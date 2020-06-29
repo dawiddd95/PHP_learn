@@ -35,7 +35,7 @@
 
 
    // obiekt klasy Request do obsługi zapytań HTTP
-   $request = new Request($_GET, $_POST);
+   $request = new Request($_GET, $_POST, $_SERVER);
 
    try {
       // $configuration możemy wstrzyknąć do Controller na 2 sposoby => albo dopisując go do wywołania obiektu new Controller($request, $configuration), albo tworząc metodę statyczną i wywołując ją w tym miejscu

@@ -99,13 +99,16 @@ class NoteController extends AbstractController
 
    public function editAction()
    {
-
-      if ($this->request->isPost()) {
+      // Jeśli wysłane zapytanie jest POST
+      if($this->request->isPost()) {
+         // To pobieramy z tego POST id notatki
+         // postParam to metoda klasy Request, która zwraca parametry i ich wartości z żądania POST
          $noteId = (int) $this->request->postParam('id');
          $noteData = [
             'title' => $this->request->postParam('title'),
             'description' => $this->request->postParam('description')
          ];
+         // Wywołujemy edycję notatki w klasie Database, przekazujemy id notatki do edycji oraz dane notatki wyświetlone w form
          $this->database->editNote($noteId, $noteData);
          $this->redirect('/', ['before' => 'edited']);
       }
@@ -124,6 +127,8 @@ class NoteController extends AbstractController
          $this->redirect('/', ['error' => 'noteNotFound']);
       }
 
+      // Renderujemy widok o nazwie edit z przekazanymi parametrami note gdzie znajdują się dane notatki do edycji
+      // Teraz te dane z note możemy wyświetlić w widoku
       $this->view->render('edit', ['note' => $note]);
    }
 
