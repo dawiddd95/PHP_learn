@@ -56,11 +56,34 @@ class Database
       return $note;
    }
 
-   public function getNotes(): array
+   // Przekazujemy parametry do sortowania
+   public function getNotes(string $sortBy, string $sortOrder): array
    {
       try {
+         // Tworzymy walidację, żeby ktoś nam nie podał sortuj po opisie zamiast tytule lub dacie, bo sortowania po opisie nie uwzgledniamy
+         // in_array sprawdza czy wartości istnieją w tablicy
+         // Metoda sprawdza czy to co jest w $sortBy jest created lub title, innych wartości nie przyjmie, zwróci wtedy false
+         // Negujemy tę metodę żeby wykonało kod w bloku if kiedy nie znajduje się ani created, ani title
+         // Sprawdzania tyczy się występowania jednego z dwóch, a nie dwóch jednocześnie
+         // Niemożliwe jest występowanie dwóch jednocześnie bo mamy tak skonstruowany URL że się nie da, jest albo sortby-created albo sortby=title bez sortby=created&title
+         if(!in_array($sortBy, ['created', 'title'] )) {
+            // Wtedy domyślnie sortuj po tytule
+            $sortBy = 'title';
+         }
+
+         // Walidacja dla parametru sortorder=
+         if(!in_array($sortOrder, ['asc', 'desc'] )) {
+            // Wtedy domyślnie sortuj asc
+            $sortOrder = 'asc';
+         }
+
          // Mikro optymalizacja zamiast pobierać wszystko kiedy w liście np: nie chcemy pokazywać description to nie pobierajmy tej kolumny z DB
-         $query = "SELECT id, title, created FROM notes";
+         // Nie ma potrzeby eskejpowania sortBy i sortOrder bo już w inny sposób walidowaliśmy tylko jakie wartości może przyjąć
+         $query = "
+            SELECT id, title, created 
+            FROM notes
+            ORDER BY $sortBy $sortOrder
+         ";
 
          // metoda query() z obiektu klasy PDO służy do pobierania danych, a metoda exec() do całej reszty
          $result = $this->conn->query($query);
@@ -111,6 +134,16 @@ class Database
          $this->conn->exec($query);
       } catch (Throwable $e) {
          throw new StorageException('Nie udało się zaktualizować notetki', 400, $e);
+      }
+   }
+
+   public function deleteNote(int $id): void
+   {
+      try {
+         $query = "DELETE FROM notes WHERE id = $id LIMIT 1";
+         $this->conn->exec($query);
+      } catch (Throwable $e) {
+         throw new StorageException('Nie udało się usunąć notatki', 400, $e);
       }
    }
 

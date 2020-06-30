@@ -57,7 +57,7 @@ abstract class AbstractController
    }
 
    // Metoda klasy służąca do uruchomienia i działania kontrolera
-   public function run(): void
+   final public function run(): void
    {
       // Zwróci do zmiennej $action parametr ?action=
       // Wywołanie metody, która rozpoznaje jaka akcja jest wykonana (czy do tworzenia, czy edycji, czy usuwania, czy show etc..). Jeśli nie ma żadnej akcji czyli w URL nie ma ?action= to przejdzie do default.
@@ -100,7 +100,8 @@ abstract class AbstractController
 
 
    // Metoda realizująca wszystkie przekierowania na error na sukces etc..
-   protected function redirect(string $to, array $params): void 
+   // final ustawiamy kiedy nie chcemy żeby ktoś nam modyfikował metodę
+   final protected function redirect(string $to, array $params): void 
    {
       $location = $to;
 
@@ -131,7 +132,7 @@ abstract class AbstractController
 
 
    // Metoda służąca do rozpoznania akcji (typu żądania HTTP)
-   private function action(): string
+   final private function action(): string
    {
       // Pobiera z URL wartość parametru ?action i przypisuje go do zmiennej
       // Jeśli nie udało się zwrócić dane z parametru to zwróć akcję domyślną 

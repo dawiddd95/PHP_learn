@@ -10,7 +10,7 @@ use App\Exception\NotFoundException;
 // Obsługa tylko akcji dotyczących notatek
 class NoteController extends AbstractController
 {
-   public function createAction()
+   public function createAction(): void
    {
       // to wyświetl page o nazwie create
       // Zmienna page już nie jest potrzebna bo występuje tylko w jednym miejscu
@@ -44,24 +44,11 @@ class NoteController extends AbstractController
       );
    }
 
-   public function showAction()
+   public function showAction(): void
    {
       // Przy URL na show szczegóły notatki powinno zwrócić 'action' => 'show' oraz 'id' => id z URL
       // Rzutujemy na int ponieważ wszystkie dane z URL są w stringu, a getNote przyjmuje argument typu int
-      $noteId = (int) $this->request->getParam('id');
-
-      if (!$noteId) {
-         // Wywołaj metodę przekierowującą
-         $this->redirect('/', ['error' => 'missingNoteId']);
-      }
-
-      try {
-         // Wywołujemy metodę getNote() na bazie danych
-         $note = $this->database->getNote($noteId);
-      } catch(NotFoundException $e) {
-         // Wywołuje metodę przekierowującą
-         $this->redirect('/', ['error' => 'noteNotFound']);
-      }
+      // $noteId = (int) $this->request->getParam('id');
 
       // W viewParams, które przekazujemy do widoku tworzymy sobie klucz 'note' pod którym będą szczegóły notatki
       // $viewParams jest używane tylko w jednej zmiennej więc to usuniemy
@@ -73,21 +60,28 @@ class NoteController extends AbstractController
          // template jaki ma wywołać
          'show', 
          // Przekazujemy tablicę z kluczem 'note' i wartości pod kluczem zmiennej $note
-         ['note' => $note]
+         ['note' => $this->getNote()]
       );
    }
 
-   public function listAction()
+   public function listAction(): void
    {
+      // Tutaj są podane jakie mają być wartości domyślne sortowań
+      $sortBy = $this->request->getParam('sortby', 'created');
+      $sortOrder = $this->request->getParam('sortorder', 'asc');
+
       // Wywołujemy metodę render na tej klasie, która renderuje nam stronę i opcjonalne parametry jeśli są
       $this->view->render(
          // Pokaż nam widok list.php bo jak przekazujemy $page do render() w klasie View to tam jest require_once("templates/layout.php"); i kiedy już nam przechodzi do tego importowanego pliku layoutu i tam mamy poniższy fragment
          // <?php require_once("templates/pages/$page.php"); znak_Zapytania> , który renderuje nam w tym miejscu widok w zależności od wartości zmiennej $page
          'list', 
          [
+            // Do sortowania notatek
+            'sort' => [ 'by' => $sortBy, 'order' => $sortOrder ],
             // Wywołanie metody getNotes() z klasy Database (obiekt database, bo pole private Database $database)
             // Zwrócenie wszystkich notes
-            'notes' => $this->database->getNotes(),
+            // Przekazujemy też do bazy danych jakie sortowanie uwzględnić
+            'notes' => $this->database->getNotes($sortBy, $sortOrder),
             // Do klucza before z viewParams przypisujemy wartość z klucza before jeśli jest, w przeciwnym wypadku przypisz null
             // before służy do tego czy ma być pokazany flash message, że notatka została utworzona czy nie
             'before' => $this->request->getParam('before'),
@@ -97,7 +91,7 @@ class NoteController extends AbstractController
       );
    }
 
-   public function editAction()
+   public function editAction(): void
    {
       // Jeśli wysłane zapytanie jest POST
       if($this->request->isPost()) {
@@ -113,11 +107,44 @@ class NoteController extends AbstractController
          $this->redirect('/', ['before' => 'edited']);
       }
 
+      // Renderujemy widok o nazwie edit z przekazanymi parametrami note gdzie znajdują się dane notatki do edycji
+      // Teraz te dane z note możemy wyświetlić w widoku
+      $this->view->render(
+         'edit', 
+         ['note' => $this->getNote()]
+      );
+   }
+
+   // Funkcja do usuwania notatki
+   public function deleteAction(): void
+   {
+      // Jeśli wysłane zapytanie jest POST
+      if($this->request->isPost()) {
+         // to pobierz id z URL
+         $id = (int) $this->request->postParam('id');
+         // Wykonaj metodę usuwania na bazie danych
+         $this->database->deleteNote($id);
+         // Przekieruj na URL / z parametrem before i wartością deleted
+         $this->redirect('/', ['before' => 'deleted']);
+      }
+
+      // Wyrenderuj widok o nazwie delete i przekaż w 'note' dane notatki, które będą pobrane z metody getNote()
+      $this->view->render(
+         'delete',
+         ['note' => $this->getNote()]
+      );
+   }
+
+   // Z tej metody są brane dane notatki do usunięcia, wyświetlenia oraz edycji 
+   // Tworzymy metodę taką ponieważ kod z tej metody nam się duplikował, aż w 3 miejscach
+   // Tworzymy tę metodę tutaj, a nie w abstrakcyjnej ponieważ pobieramy notatkę i jest to specyficzne zachowanie w kontekście notatki
+   final private function getNote(): array
+   {
       // Pobieramy notatkę, którą chcemy edytować po jej id
       $noteId = (int) $this->request->getParam('id');
       // Jeśli nie znalazło id
       if (!$noteId) {
-         // Wykonaj metodę prywatną redirect
+         // Wykonaj metodę prywatną redirect z klasy abstrakcyjnej
          $this->redirect('/', ['error' => 'missingNoteId']);
       }
 
@@ -127,10 +154,6 @@ class NoteController extends AbstractController
          $this->redirect('/', ['error' => 'noteNotFound']);
       }
 
-      // Renderujemy widok o nazwie edit z przekazanymi parametrami note gdzie znajdują się dane notatki do edycji
-      // Teraz te dane z note możemy wyświetlić w widoku
-      $this->view->render('edit', ['note' => $note]);
+      return $note;
    }
-
-   
 }
