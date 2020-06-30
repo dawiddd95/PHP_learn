@@ -99,6 +99,24 @@ class Database
       }
    }
 
+   public function getCount(): int
+   {
+      try {
+         // Nie robimy tak, że zwracamy z bazy danych wszystko, nawet to czego nie potrzebujemy, a na kliencie filtrujemy te dane lub zwracamy ich length. Odrazu zwracajmy z bazy danych tylko to co potrzebujemy, jak w zapisie poniżej
+         // AS cn zwróci nam ilość wierszy pod kluczem cn
+         $query = "SELECT count(*) AS cn FROM notes";
+         $result = $this->conn->query($query);
+         $result = $result->fetch(PDO::FETCH_ASSOC);
+         if ($result === false) {
+            throw new StorageException('Błąd przy próbie pobrania ilości notatek', 400);
+         }
+
+         return (int) $result['cn'];
+      } catch (Throwable $e) {
+         throw new StorageException('Nie udało się pobrać informacji o liczbie notatek', 400, $e);
+      }
+   }
+
    // w $data dostajemy dane z formularzu do dodawania notatki
    public function createNote(array $data): void
    {

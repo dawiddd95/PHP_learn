@@ -76,6 +76,8 @@ class NoteController extends AbstractController
       $sortBy = $this->request->getParam('sortby', 'created');
       $sortOrder = $this->request->getParam('sortorder', 'asc');
 
+      $notesAmount = $this->database->getCount();
+
       // Zabezpieczamy się, żeby użytkownik nie mógł sobie wpisać w paginację milion lub innej wielkiej wartości
       // Ustawimy sobie możliwości paginacji na sztywno
       // Jeśli pageSize nie jest 1, 5, 10 lub 25
@@ -84,7 +86,6 @@ class NoteController extends AbstractController
          $pageSize = self::PAGE_SIZE;
       }
 
-
       // Wywołujemy metodę render na tej klasie, która renderuje nam stronę i opcjonalne parametry jeśli są
       $this->view->render(
          // Pokaż nam widok list.php bo jak przekazujemy $page do render() w klasie View to tam jest require_once("templates/layout.php"); i kiedy już nam przechodzi do tego importowanego pliku layoutu i tam mamy poniższy fragment
@@ -92,7 +93,16 @@ class NoteController extends AbstractController
          'list', 
          [
             // Do paginacji => aktualny numer strony oraz ile elementów ma pokazywać na stronie
-            'page' => [ 'number' => $pageNumber, 'size' => $pageSize ],
+            'page' => [
+               // numer strony 
+               'number' => $pageNumber,
+               // ilość elementów na jednej stronie 
+               'size' => $pageSize,
+               // ilość stron
+               // ceil() zaokrąglenie do góry do liczby całkowitej np: 4.14 da 5, -3.14 da -3, 9.99 da 10
+               // ceil() zwraca float więc jeśli chcemy int to musimy rzutować
+               'pages' => (int) ceil($notesAmount/$pageSize)
+            ],
             // Do sortowania notatek
             'sort' => [ 'by' => $sortBy, 'order' => $sortOrder ],
             // Wywołanie metody getNotes() z klasy Database (obiekt database, bo pole private Database $database)

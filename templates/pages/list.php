@@ -110,5 +110,37 @@
         </tbody>
       </table>
     </div>
+
+    <?php
+      $paginationUrl = "&pagesize=$size?sortby=$by&sortorder=$order";
+    ?>
+    <ul class="pagination">
+      <!-- Jeśli jesteśmy na stronie nie numer 1 -->
+      <?php if ($currentPage !== 1) : ?>
+        <li>
+          <!-- Link przenisie nas do URL z parametrem ?page= o 1 mniej niż aktualny page z dołączonym do URL stringiem "&pagesize=$size?sortby=$by&sortorder=$order" ta reszta URL jest po to by podtrzymać sortowanie takie jakie chcemyi żeby nam go nie resetowało co przejście na inną stronę -->
+          <a href="/?page=<?php echo $currentPage - 1 . $paginationUrl ?>">
+            <!-- Ten link będzie jako buton z napisem Prev -->
+            <button> Prev </button>
+          </a>
+        </li>
+      <?php endif; ?>
+      <!-- Iterujemy bo całej ilości stron i zwracamy buttony które mają linkowanie do strony z $i z dołączonym do URL stringiem "&pagesize=$size?sortby=$by&sortorder=$order" ta reszta URL jest po to by podtrzymać sortowanie takie jakie chcemyi żeby nam go nie resetowało co przejście na inną stronę -->
+      <?php for ($i = 1; $i <= $pages; $i++) : ?> <li>
+          <a href="/?page=<?php echo $i . $paginationUrl ?>">
+            <button><?php echo $i ?></button>
+          </a>
+        </li>
+      <?php endfor; ?>
+      <!-- Jeśli strona na której aktualnie jesteśmy jest mniejsza niż ilość stron wszystkich -->
+      <?php if ($currentPage < $pages) : ?>
+        <li>
+          <!-- To pokaż link do przejścia na następną stronę -->
+          <a href="/?page=<?php echo $currentPage + 1 . $paginationUrl ?>">
+            <button> Next </button>
+          </a>
+        </li>
+      <?php endif; ?>
+    </ul>
   </section>
 </div>
