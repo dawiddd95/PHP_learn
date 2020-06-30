@@ -10,6 +10,8 @@ use App\Exception\NotFoundException;
 // Obsługa tylko akcji dotyczących notatek
 class NoteController extends AbstractController
 {
+   private const PAGE_SIZE = 10;
+
    public function createAction(): void
    {
       // to wyświetl page o nazwie create
@@ -66,9 +68,22 @@ class NoteController extends AbstractController
 
    public function listAction(): void
    {
+      // Domyślnie będziemy na stronie 1, jeśli żadna wartość do parametru URL number nie zostanie podana
+      $pageNumber = (int) $this->request->getParam('page', 1);
+      // Domyślnie będzie brało 10 elementów na stronie bo tak mamy w stałej PAGE_SIZE
+      $pageSize = (int) $this->request->getParam('pagesize', self::PAGE_SIZE);
       // Tutaj są podane jakie mają być wartości domyślne sortowań
       $sortBy = $this->request->getParam('sortby', 'created');
       $sortOrder = $this->request->getParam('sortorder', 'asc');
+
+      // Zabezpieczamy się, żeby użytkownik nie mógł sobie wpisać w paginację milion lub innej wielkiej wartości
+      // Ustawimy sobie możliwości paginacji na sztywno
+      // Jeśli pageSize nie jest 1, 5, 10 lub 25
+      if(!is_array([1, 5, 10, 25])) {
+         // to ustawiamy domyślny pageSize
+         $pageSize = self::PAGE_SIZE;
+      }
+
 
       // Wywołujemy metodę render na tej klasie, która renderuje nam stronę i opcjonalne parametry jeśli są
       $this->view->render(
@@ -76,12 +91,14 @@ class NoteController extends AbstractController
          // <?php require_once("templates/pages/$page.php"); znak_Zapytania> , który renderuje nam w tym miejscu widok w zależności od wartości zmiennej $page
          'list', 
          [
+            // Do paginacji => aktualny numer strony oraz ile elementów ma pokazywać na stronie
+            'page' => [ 'number' => $pageNumber, 'size' => $pageSize ],
             // Do sortowania notatek
             'sort' => [ 'by' => $sortBy, 'order' => $sortOrder ],
             // Wywołanie metody getNotes() z klasy Database (obiekt database, bo pole private Database $database)
             // Zwrócenie wszystkich notes
             // Przekazujemy też do bazy danych jakie sortowanie uwzględnić
-            'notes' => $this->database->getNotes($sortBy, $sortOrder),
+            'notes' => $this->database->getNotes($pageNumber, $pageSize, $sortBy, $sortOrder),
             // Do klucza before z viewParams przypisujemy wartość z klucza before jeśli jest, w przeciwnym wypadku przypisz null
             // before służy do tego czy ma być pokazany flash message, że notatka została utworzona czy nie
             'before' => $this->request->getParam('before'),

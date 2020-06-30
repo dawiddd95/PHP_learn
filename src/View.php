@@ -17,15 +17,22 @@ class View
    private function escape(array $params): array
    {
       $clearParams = [];
-
       foreach ($params as $key => $param) {
-         // Jeśli jakiś parametr jest tablicą to wywołaj rekurencyjnie tę metodę by i parametry w tym parametrze (tablicy) sprawdziło
-         if (is_array($param)) {
-            $clearParams[$key] = $this->escape($param);
-         } else if ($param) {
-            $clearParams[$key] = htmlentities($param);
-         } else {
-            $clearParams[$key] = $param;
+         switch (true) {
+            // Jeśli jakiś parametr jest tablicą to wywołaj rekurencyjnie tę metodę by i parametry w tym parametrze (tablicy) sprawdziło
+            case is_array($param):
+               $clearParams[$key] = $this->escape($param);
+               break;
+            // Jeśli element jest intem
+            case is_int($param):
+               $clearParams[$key] = $param;
+               break;
+            case $param:
+               $clearParams[$key] = htmlentities($param);
+               break;
+            default:
+               $clearParams[$key] = $param;
+               break;
          }
       }
 

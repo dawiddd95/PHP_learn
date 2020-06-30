@@ -57,9 +57,11 @@ class Database
    }
 
    // Przekazujemy parametry do sortowania
-   public function getNotes(string $sortBy, string $sortOrder): array
+   public function getNotes(int $pageNumber, int $pageSize, string $sortBy, string $sortOrder): array
    {
       try {
+         $limit = $pageSize;
+         $offset = ($pageNumber - 1) * $pageSize;
          // Tworzymy walidację, żeby ktoś nam nie podał sortuj po opisie zamiast tytule lub dacie, bo sortowania po opisie nie uwzgledniamy
          // in_array sprawdza czy wartości istnieją w tablicy
          // Metoda sprawdza czy to co jest w $sortBy jest created lub title, innych wartości nie przyjmie, zwróci wtedy false
@@ -79,10 +81,12 @@ class Database
 
          // Mikro optymalizacja zamiast pobierać wszystko kiedy w liście np: nie chcemy pokazywać description to nie pobierajmy tej kolumny z DB
          // Nie ma potrzeby eskejpowania sortBy i sortOrder bo już w inny sposób walidowaliśmy tylko jakie wartości może przyjąć
+         // LIMIT [od jakiego elementu], [ile elementów]
          $query = "
             SELECT id, title, created 
             FROM notes
             ORDER BY $sortBy $sortOrder
+            LIMIT $offset, $limit
          ";
 
          // metoda query() z obiektu klasy PDO służy do pobierania danych, a metoda exec() do całej reszty

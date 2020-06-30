@@ -38,23 +38,34 @@
       $sort = $params['sort'] ?? [];
       $by = $sort['by'] ?? 'title';
       $order = $sort['order'] ?? 'desc';
+
+      $page = $params['page'] ?? [];
+      $size = $page['size'] ?? 10;
+      $currentPage = $page['number'] ?? 1;
+      $pages = $page['pages'] ?? 1;
     ?>
 
-
     <div>
-      <!-- Formularz do sortowania notatek -->
+      <!-- Formularz do sortowania notatek i paginacji -->
       <form class="settings-form" action="/" method="GET">
         <div>
           <div>Sortuj po:</div>
           <!-- Jeśli parametr by ma wartość title to zaznacz  radio że sortuje po tytule. W przeciwnym wypadku nie zaznaczaj czyli radio nie będzie mieć właściwości checked, która oznacza zaznaczenie -->
           <label>Tytule: <input name="sortby" type="radio" value="title" <?php echo $by === 'title' ? 'checked' : '' ?> /></label>
-          <!-- Jeśli parametr by ma wartość created (w kontekście data utworzenia) to zaznacz  radio że sortuje po dacie -->
+           <!-- Jeśli parametr by ma wartość created (w kontekście data utworzenia) to zaznacz  radio że sortuje po dacie -->
           <label>Dacie: <input name="sortby" type="radio" value="created" <?php echo $by === 'created' ? 'checked' : '' ?> /></label>
         </div>
         <div>
           <div>Kierunek sortowania</div>
           <label>Rosnąco: <input name="sortorder" type="radio" value="asc" <?php echo $order === 'asc' ? 'checked' : '' ?> /></label>
           <label>Malejąco: <input name="sortorder" type="radio" value="desc" <?php echo $order === 'desc' ? 'checked' : '' ?> /></label>
+        </div>
+        <div>
+          <div>Rozmiar paczki</div>
+          <label>1 <input name="pagesize" type="radio" value="1" <?php echo $size === 1 ? 'checked' : '' ?> /></label>
+          <label>5 <input name="pagesize" type="radio" value="5" <?php echo $size === 5 ? 'checked' : '' ?> /></label>
+          <label>10 <input name="pagesize" type="radio" value="10" <?php echo $size === 10 ? 'checked' : '' ?> /></label>
+          <label>25 <input name="pagesize" type="radio" value="25" <?php echo $size === 25 ? 'checked' : '' ?> /></label>
         </div>
         <input type="submit" value="Wyślij" />
       </form>
