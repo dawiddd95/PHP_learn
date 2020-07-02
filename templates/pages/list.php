@@ -43,11 +43,17 @@
       $size = $page['size'] ?? 10;
       $currentPage = $page['number'] ?? 1;
       $pages = $page['pages'] ?? 1;
+
+      $phrase = $params['phrase'] ?? null;
     ?>
 
     <div>
       <!-- Formularz do sortowania notatek i paginacji -->
       <form class="settings-form" action="/" method="GET">
+        <div>
+          <label>Wyszukaj</label>
+          <input name='phrase' type="text" value="<?php echo $phrase ?>" >
+        </div>
         <div>
           <div>Sortuj po:</div>
           <!-- Jeśli parametr by ma wartość title to zaznacz  radio że sortuje po tytule. W przeciwnym wypadku nie zaznaczaj czyli radio nie będzie mieć właściwości checked, która oznacza zaznaczenie -->
@@ -112,7 +118,7 @@
     </div>
 
     <?php
-      $paginationUrl = "&pagesize=$size?sortby=$by&sortorder=$order";
+      $paginationUrl = "&phrase=$phrase&pagesize=$size?sortby=$by&sortorder=$order";
     ?>
     <ul class="pagination">
       <!-- Jeśli jesteśmy na stronie nie numer 1 -->

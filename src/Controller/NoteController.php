@@ -24,9 +24,9 @@ class NoteController extends AbstractController
       // Jeśli nie wysyłamy żadnych danych na serwer przez formularz, ale i tak jesteśmy na URL ?action= to znaczy że jest żądanie GET, nie post
       // Wywołujemy metodę sprawdzającą czy są jakieś dane nadesłane przez POST wtedy:
       if ($this->request->hasPost()) {
-         // Wywołanie metody createNote z klasy Database z przekazanymi danymi
+         // Wywołanie metody createNote z klasy NoteModel z przekazanymi danymi
          // Nie przekażemy tutaj $data bo $data to wszystkie dane z posta, a my może nie chcemy wszystkich danych tylko te potrzebne do utworzenia notatki
-         $this->database->createNote([
+         $this->noteModel->createNote([
             'title' => $this->request->postParam('title'),
             'description' => $this->request->postParam('description')
          ]);
@@ -68,6 +68,8 @@ class NoteController extends AbstractController
 
    public function listAction(): void
    {
+      // Do wyszukiwania
+      $phrase = $this->request->getParam('phrase');
       // Domyślnie będziemy na stronie 1, jeśli żadna wartość do parametru URL number nie zostanie podana
       $pageNumber = (int) $this->request->getParam('page', 1);
       // Domyślnie będzie brało 10 elementów na stronie bo tak mamy w stałej PAGE_SIZE
@@ -76,7 +78,7 @@ class NoteController extends AbstractController
       $sortBy = $this->request->getParam('sortby', 'created');
       $sortOrder = $this->request->getParam('sortorder', 'asc');
 
-      $notesAmount = $this->database->getCount();
+      $notesAmount = $this->noteModel->getCount();
 
       // Zabezpieczamy się, żeby użytkownik nie mógł sobie wpisać w paginację milion lub innej wielkiej wartości
       // Ustawimy sobie możliwości paginacji na sztywno
@@ -84,6 +86,20 @@ class NoteController extends AbstractController
       if(!is_array([1, 5, 10, 25])) {
          // to ustawiamy domyślny pageSize
          $pageSize = self::PAGE_SIZE;
+      }
+
+      // Jeśli coś jest wyszukiwane to zwróć tylko te wyszukane i tylko ilość wyszukanych
+      if($phrase) {
+         // Wszystkie wyszukane notatki
+         $noteList = $this->noteModel->searchNotes($phrase, $pageNumber, $pageSize, $sortBy, $sortOrder);
+         // Ilość wyszukanych
+         $notes = $this->noteModel->getSearchCount($phrase);
+      // W przeciwnym wypadku wszystkie wyszukane i ilość wszystkich
+      } else {
+         // Wszystkie notatki w ogóle
+         $noteList = $this->noteModel->getNotes($pageNumber, $pageSize, $sortBy, $sortOrder);
+         // Ilość wszystkich notatek w ogóle
+         $notes = $this->noteModel->getCount(); 
       }
 
       // Wywołujemy metodę render na tej klasie, która renderuje nam stronę i opcjonalne parametry jeśli są
@@ -103,12 +119,13 @@ class NoteController extends AbstractController
                // ceil() zwraca float więc jeśli chcemy int to musimy rzutować
                'pages' => (int) ceil($notesAmount/$pageSize)
             ],
+            'phrase' => $phrase,
             // Do sortowania notatek
             'sort' => [ 'by' => $sortBy, 'order' => $sortOrder ],
-            // Wywołanie metody getNotes() z klasy Database (obiekt database, bo pole private Database $database)
+            // Wywołanie metody getNotes() z klasy NoteModel (obiekt noteModel, bo pole private NoteModel $noteModel)
             // Zwrócenie wszystkich notes
             // Przekazujemy też do bazy danych jakie sortowanie uwzględnić
-            'notes' => $this->database->getNotes($pageNumber, $pageSize, $sortBy, $sortOrder),
+            'notes' => $noteList,
             // Do klucza before z viewParams przypisujemy wartość z klucza before jeśli jest, w przeciwnym wypadku przypisz null
             // before służy do tego czy ma być pokazany flash message, że notatka została utworzona czy nie
             'before' => $this->request->getParam('before'),
@@ -129,8 +146,8 @@ class NoteController extends AbstractController
             'title' => $this->request->postParam('title'),
             'description' => $this->request->postParam('description')
          ];
-         // Wywołujemy edycję notatki w klasie Database, przekazujemy id notatki do edycji oraz dane notatki wyświetlone w form
-         $this->database->editNote($noteId, $noteData);
+         // Wywołujemy edycję notatki w klasie NoteModel, przekazujemy id notatki do edycji oraz dane notatki wyświetlone w form
+         $this->noteModel->editNote($noteId, $noteData);
          $this->redirect('/', ['before' => 'edited']);
       }
 
@@ -150,7 +167,7 @@ class NoteController extends AbstractController
          // to pobierz id z URL
          $id = (int) $this->request->postParam('id');
          // Wykonaj metodę usuwania na bazie danych
-         $this->database->deleteNote($id);
+         $this->noteModel->deleteNote($id);
          // Przekieruj na URL / z parametrem before i wartością deleted
          $this->redirect('/', ['before' => 'deleted']);
       }
@@ -174,12 +191,8 @@ class NoteController extends AbstractController
          // Wykonaj metodę prywatną redirect z klasy abstrakcyjnej
          $this->redirect('/', ['error' => 'missingNoteId']);
       }
-
-      try {
-         $note = $this->database->getNote($noteId);
-      } catch (NotFoundException $e) {
-         $this->redirect('/', ['error' => 'noteNotFound']);
-      }
+      
+      $note = $this->noteModel->getNote($noteId); 
 
       return $note;
    }

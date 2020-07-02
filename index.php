@@ -31,9 +31,6 @@
    use App\Exception\AppException;
    use App\Exception\ConfigurationException;
 
-
-
-
    // obiekt klasy Request do obsługi zapytań HTTP
    $request = new Request($_GET, $_POST, $_SERVER);
 
