@@ -59,18 +59,3 @@
       echo '<h1>Wystąpił błąd w aplikacji</h1>';
       dump($e);
    }
-
-
-   // ============================================================================================
-   // src <- nasz kod klas, funkcji etc..
-   // src/utils <- Tutaj znajduje się nasza funkcja debugująca
-   // src/Database.php <- klasa na której wykonujemy operacje na db - połączenie z db, zapytania do db
-   // src/Exception <- Wyjątki naszej aplikacji 
-   // src/Request.php <- Wszystkie dane o requeście, które ma obsługiwać Kontroler
-   // ---> AppException.php <- Ogólne wyjątki dla aplikacji
-   // ---> StorageException.php <- Wyjątki dotyczące bazy danych
-   // ---> ConfigurationException.php <- Wyjątki dotyczące konfiguracji
-   // templates <- wszystko co jest związane z HTML i szablonami widoków
-   // templates/pages <- strony jak lista notatek, dodaj nową notatkę, edytuj, pokaż szczegóły
-   // public <= style css
-   // config/config.php <- Konfiguracja bazy danych
