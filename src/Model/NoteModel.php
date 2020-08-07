@@ -1,7 +1,5 @@
 <?php
 
-// Zachować obie wersje, jedna działa druga ma wyjaśnienia
-
 declare(strict_types=1);
 
 // Umieszczamy klasę NoteModel w osobnym katalogu i też stworzymy klasę abstrakcyjną, żeby nie mieć jednej wielkiej klasy gdzie jest CRUD na userach, notatkach, produkatch, zamówieniach
